@@ -49,7 +49,6 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.0.0",
         "larastan/larastan": "^3.0",
-        "laravel/dusk": "^8.2.0",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
@@ -74,7 +73,6 @@
       "extra": {
         "laravel": {
           "dont-discover": [
-            "laravel/dusk",
             "nunomaduro/collision",
             "pestphp/pest-plugin-laravel",
             "spatie/laravel-ignition",
