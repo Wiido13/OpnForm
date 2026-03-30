@@ -74,8 +74,13 @@
 
         <!-- Submitted view provided to renderer -->
         <template #after-submit>
+          <div
+            v-if="form.settings?.use_custom_html_success_page && form.settings?.custom_success_html"
+            class="form-description text-neutral-700 dark:text-neutral-300"
+            v-html="form.settings.custom_success_html"
+          />
           <TextBlock
-            v-if="form.submitted_text"
+            v-else-if="form.submitted_text"
             class="form-description text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap"
             :content="form.submitted_text"
             :mentions-allowed="true"

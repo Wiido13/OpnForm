@@ -182,6 +182,8 @@ abstract class UserFormRequest extends \Illuminate\Foundation\Http\FormRequest
             // Settings
             'settings' => 'nullable|array',
             'settings.navigation_arrows' => 'sometimes|boolean',
+            'settings.use_custom_html_success_page' => 'sometimes|boolean',
+            'settings.custom_success_html' => 'sometimes|nullable|string|max:50000',
         ];
     }
 
