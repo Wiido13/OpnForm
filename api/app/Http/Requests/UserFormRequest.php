@@ -141,6 +141,7 @@ abstract class UserFormRequest extends \Illuminate\Foundation\Http\FormRequest
             'cover_settings.focal_point.x' => 'sometimes|nullable|numeric|min:0|max:100',
             'cover_settings.focal_point.y' => 'sometimes|nullable|numeric|min:0|max:100',
             'cover_settings.brightness' => 'sometimes|nullable|integer|min:-100|max:100',
+            'cover_settings.fit' => 'sometimes|nullable|in:cover,contain',
 
             // Custom Code
             'custom_code' => 'string|nullable',

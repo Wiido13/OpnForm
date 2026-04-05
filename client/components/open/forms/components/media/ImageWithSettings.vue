@@ -36,6 +36,11 @@
               />
             </div>
 
+            <div v-if="kind === 'cover'" class="mt-4 flex items-center justify-between gap-2">
+              <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ $t('Full banner (no crop)') }}</span>
+              <USwitch v-model="fitContainModel" />
+            </div>
+
             <div v-if="showAlt" class="mt-4">
               <text-input
                 :form="form"
@@ -139,6 +144,18 @@ const brightnessModel = computed({
       if (!props.form.image) props.form.image = {}
       props.form.image.brightness = num
     }
+  }
+})
+
+// Fit mode mapping (cover only): true = 'contain' (full banner), false = 'cover' (default crop)
+const fitContainModel = computed({
+  get() {
+    return props.form?.cover_settings?.fit === 'contain'
+  },
+  set(val) {
+    const base = props.form?.cover_settings ? { ...props.form.cover_settings } : {}
+    base.fit = val ? 'contain' : 'cover'
+    props.form.cover_settings = base
   }
 })
 
