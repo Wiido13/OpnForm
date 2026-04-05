@@ -15,6 +15,7 @@
           <BlockMediaLayout
             :image="coverMedia"
             :img-class="coverPictureFit === 'contain' ? 'w-full h-auto' : 'w-full h-full object-cover'"
+            :fallback-height="coverPictureFit === 'contain' ? null : '12rem'"
             alt="Form cover image"
           />
         </div>
