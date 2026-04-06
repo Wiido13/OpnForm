@@ -7,8 +7,17 @@
     <!-- Classic cover/logo rendering -->
     <div v-if="showBrandingMedia" class="mb-2">
       <div v-if="form.cover_picture">
-        <div id="cover-picture" class="h-56 w-full overflow-hidden pointer-events-none">
-          <BlockMediaLayout :image="coverMedia" img-class="w-full h-full object-cover" alt="Form cover image" />
+        <div
+          id="cover-picture"
+          class="w-full pointer-events-none"
+          :class="coverPictureFit === 'contain' ? '' : 'h-56 overflow-hidden'"
+        >
+          <BlockMediaLayout
+            :image="coverMedia"
+            :img-class="coverPictureFit === 'contain' ? 'w-full h-auto' : 'w-full h-full object-cover'"
+            :fallback-height="coverPictureFit === 'contain' ? null : '12rem'"
+            alt="Form cover image"
+          />
         </div>
       </div>
       <div
@@ -256,6 +265,8 @@ const coverMedia = computed(() => ({
   focal_point: form.value?.cover_settings?.focal_point,
   brightness: form.value?.cover_settings?.brightness
 }))
+
+const coverPictureFit = computed(() => form.value?.cover_settings?.fit || 'cover')
 
 // Hide logo/cover in READ_ONLY and EDIT modes
 const showBrandingMedia = computed(() => {
