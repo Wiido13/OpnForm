@@ -184,7 +184,24 @@
               />
             </template>
             <template v-else>
+              <toggle-switch-input
+                v-model="useCustomHtmlSuccessPage"
+                class="mb-4"
+                label="Use custom HTML"
+                help="Replace the rich text editor with a raw HTML editor for full formatting control."
+              />
+              <CodeInput
+                v-if="useCustomHtmlSuccessPage"
+                :allow-fullscreen="true"
+                name="settings.custom_success_html"
+                class="w-full"
+                :form="form"
+                label="Success page HTML"
+                placeholder="<div style='text-align: center'><h2>Thank you!</h2></div>"
+                help="Raw HTML rendered on the success page. Use any HTML tags and inline styles."
+              />
               <rich-text-area-input
+                v-else
                 enable-mentions
                 :mentions="form.properties"
                 :allow-fullscreen="true"
@@ -250,6 +267,7 @@
 
 <script setup>
 import ProTag from "~/components/app/ProTag.vue"
+import CodeInput from "~/components/forms/heavy/CodeInput.client.vue"
 
 const workingFormStore = useWorkingFormStore()
 const { content: form } = storeToRefs(workingFormStore)
@@ -320,6 +338,15 @@ const focusedNextText = computed({
     const current = form.value?.translations && typeof form.value.translations === 'object' ? form.value.translations : {}
     // Replace the entire translations object to avoid setting into a readonly proxy
     form.value.translations = { ...current, focused_next_button_text: val }
+  }
+})
+
+const useCustomHtmlSuccessPage = computed({
+  get() {
+    return form.value?.settings?.use_custom_html_success_page ?? false
+  },
+  set(val) {
+    form.value.settings = { ...(form.value.settings ?? {}), use_custom_html_success_page: val }
   }
 })
 </script>
