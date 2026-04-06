@@ -1,13 +1,28 @@
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
+env:
+  # Opcional: te adelantas al cambio de Node 20 -> Node 24 (2026-06-02)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            image: wiido/opnform-api
+            dockerfile: docker/Dockerfile.api
+          - name: client
+            image: wiido/opnform-client
+            dockerfile: docker/Dockerfile.client
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,16 +38,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/opnform
+          images: docker.io/${{ matrix.image }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
-            # también podrías usar format=long si prefieres el SHA completo
 
-      - name: Build and push
+      - name: Build and push (${{ matrix.name }})
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
