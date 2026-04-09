@@ -463,6 +463,18 @@ class FormLogicConditionChecker
         return false;
     }
 
+    /**
+     * Builds a base query for matching form submissions by field value.
+     *
+     * Constructs a database-driver-aware query against FormSubmission records for the
+     * current form, filtering by the given field value in the JSON `data` column.
+     * Returns null when required parameters are missing, the field ID is invalid, or
+     * the database driver is unsupported.
+     *
+     * @param  array  $condition   The property condition containing 'property_meta.id' and the value format.
+     * @param  mixed  $fieldValue  The submitted field value to match against.
+     * @return \Illuminate\Database\Eloquent\Builder|null  Query builder, or null on failure.
+     */
     private function buildSubmissionFieldQuery($condition, $fieldValue): ?\Illuminate\Database\Eloquent\Builder
     {
         if (!$fieldValue || !isset($condition['property_meta']['id'])) {
@@ -546,6 +558,15 @@ class FormLogicConditionChecker
         return $query ? $query->exists() : false;
     }
 
+    /**
+     * Returns the number of completed submissions for the current form that contain
+     * the given field value. Uses buildSubmissionFieldQuery for query construction
+     * and returns 0 when the query cannot be built.
+     *
+     * @param  array  $condition   The property condition containing 'property_meta.id'.
+     * @param  mixed  $fieldValue  The submitted field value to count against.
+     * @return int  Number of matching submissions.
+     */
     private function countSubmissions($condition, $fieldValue): int
     {
         $query = $this->buildSubmissionFieldQuery($condition, $fieldValue);

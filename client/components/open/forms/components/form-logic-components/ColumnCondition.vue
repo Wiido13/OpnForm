@@ -288,7 +288,10 @@ export default {
       if (operator.expected_type === "boolean") {
         content.value = Boolean(content.value)
       } else if (operator.expected_type === "number" && content.value !== null && content.value !== undefined) {
-        content.value = Number(content.value)
+        const parsed = Number(content.value)
+        if (!isNaN(parsed)) {
+          content.value = parsed
+        }
       }
 
       return content
