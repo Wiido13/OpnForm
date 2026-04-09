@@ -1321,3 +1321,103 @@ it('validates date logic properly rejects invalid numeric condition values', fun
             'message' => 'Form submission saved.',
         ]);
 });
+
+it('blocks submission when exists_in_submissions_x_times condition is met', function () {
+    $user = $this->actingAsUser();
+    $workspace = $this->createUserWorkspace($user);
+    $form = $this->createForm($user, $workspace);
+    $targetField = collect($form->properties)->where('name', 'Email')->first();
+
+    $condition = [
+        'actions' => [],
+        'conditions' => [
+            'operatorIdentifier' => 'and',
+            'children' => [
+                [
+                    'identifier' => $targetField['id'],
+                    'value' => [
+                        'operator' => 'exists_in_submissions_x_times',
+                        'property_meta' => [
+                            'id' => $targetField['id'],
+                            'type' => 'text',
+                        ],
+                        'value' => 2,
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $validationMessage = 'Email submitted too many times';
+
+    $form->properties = collect($form->properties)->map(function ($property) use ($condition, $validationMessage) {
+        if (in_array($property['name'], ['Name'])) {
+            $property['validation'] = ['error_conditions' => $condition, 'error_message' => $validationMessage];
+        }
+        return $property;
+    })->toArray();
+
+    $form->update();
+
+    $formData = [$targetField['id'] => 'repeated@test.com'];
+
+    // First submission: count is 0, condition (>= 2) not met → allowed
+    $this->postJson(route('forms.answer', $form->slug), $formData)
+        ->assertSuccessful()
+        ->assertJson(['type' => 'success']);
+
+    // Second submission: count is 1, condition (>= 2) not met → allowed
+    $this->postJson(route('forms.answer', $form->slug), $formData)
+        ->assertSuccessful()
+        ->assertJson(['type' => 'success']);
+
+    // Third submission: count is 2, condition (>= 2) met → blocked
+    $this->postJson(route('forms.answer', $form->slug), $formData)
+        ->assertStatus(422)
+        ->assertJson(['message' => $validationMessage]);
+});
+
+it('blocks submission when does_not_exist_in_submissions_x_times condition is met', function () {
+    $user = $this->actingAsUser();
+    $workspace = $this->createUserWorkspace($user);
+    $form = $this->createForm($user, $workspace);
+    $targetField = collect($form->properties)->where('name', 'Email')->first();
+
+    $condition = [
+        'actions' => [],
+        'conditions' => [
+            'operatorIdentifier' => 'and',
+            'children' => [
+                [
+                    'identifier' => $targetField['id'],
+                    'value' => [
+                        'operator' => 'does_not_exist_in_submissions_x_times',
+                        'property_meta' => [
+                            'id' => $targetField['id'],
+                            'type' => 'text',
+                        ],
+                        'value' => 2,
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $validationMessage = 'Email not yet submitted enough times';
+
+    $form->properties = collect($form->properties)->map(function ($property) use ($condition, $validationMessage) {
+        if (in_array($property['name'], ['Name'])) {
+            $property['validation'] = ['error_conditions' => $condition, 'error_message' => $validationMessage];
+        }
+        return $property;
+    })->toArray();
+
+    $form->update();
+
+    $formData = [$targetField['id'] => 'threshold@test.com'];
+
+    // First submission: count is 0, condition (< 2) met → blocked
+    $this->postJson(route('forms.answer', $form->slug), $formData)
+        ->assertStatus(422)
+        ->assertJson(['message' => $validationMessage]);
+});

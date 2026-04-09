@@ -463,15 +463,15 @@ class FormLogicConditionChecker
         return false;
     }
 
-    private function checkExistsInSubmissions($condition, $fieldValue): bool
+    private function buildSubmissionFieldQuery($condition, $fieldValue): ?\Illuminate\Database\Eloquent\Builder
     {
         if (!$fieldValue || !isset($condition['property_meta']['id'])) {
-            return false;
+            return null;
         }
 
         $formId = $this->formData['form']['id'] ?? null;
         if (!$formId) {
-            return false;
+            return null;
         }
 
         $fieldId = $condition['property_meta']['id'];
@@ -479,7 +479,7 @@ class FormLogicConditionChecker
         // Validate field ID format to prevent SQL injection
         // Field IDs should only contain alphanumeric characters, underscores, and hyphens
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $fieldId)) {
-            return false;
+            return null;
         }
 
         $dbConnection = DB::connection()->getDriverName();
@@ -533,10 +533,24 @@ class FormLogicConditionChecker
                 $query->whereRaw("json_extract(data, ?) = ?", [$jsonPath, $fieldValue]);
             }
         } else {
-            return false;
+            return null;
         }
 
-        return $query->exists();
+        return $query;
+    }
+
+    private function checkExistsInSubmissions($condition, $fieldValue): bool
+    {
+        $query = $this->buildSubmissionFieldQuery($condition, $fieldValue);
+
+        return $query ? $query->exists() : false;
+    }
+
+    private function countSubmissions($condition, $fieldValue): int
+    {
+        $query = $this->buildSubmissionFieldQuery($condition, $fieldValue);
+
+        return $query ? $query->count() : 0;
     }
 
     /**
@@ -614,6 +628,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
@@ -654,6 +672,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
@@ -696,6 +718,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
@@ -740,6 +766,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
@@ -760,6 +790,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
@@ -792,6 +826,10 @@ class FormLogicConditionChecker
                 return $this->checkExistsInSubmissions($propertyCondition, $value);
             case 'does_not_exist_in_submissions':
                 return !$this->checkExistsInSubmissions($propertyCondition, $value);
+            case 'exists_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) >= (int) ($propertyCondition['value'] ?? 0);
+            case 'does_not_exist_in_submissions_x_times':
+                return $this->countSubmissions($propertyCondition, $value) < (int) ($propertyCondition['value'] ?? 0);
         }
 
         return false;
