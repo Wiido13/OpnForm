@@ -71,7 +71,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -79,8 +81,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -157,7 +169,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -165,8 +179,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -243,7 +267,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -251,8 +277,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -329,7 +365,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -337,8 +375,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -415,7 +463,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -423,8 +473,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -440,26 +500,28 @@
       "does_not_equal": {
         "expected_type": "object",
         "format": {
-          "type":"object"
+          "type": "object"
         }
       },
       "contains": {
         "expected_type": "object",
         "format": {
-          "type":"object"
+          "type": "object"
         }
       },
       "does_not_contain": {
         "expected_type": "object",
         "format": {
-          "type":"object"
+          "type": "object"
         }
       },
       "exists_in_submissions": {
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -467,8 +529,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -533,7 +605,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -541,8 +615,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -723,7 +807,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -731,8 +817,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -773,7 +869,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -781,8 +879,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -790,13 +898,19 @@
   "multi_select": {
     "comparators": {
       "contains": {
-        "expected_type": ["object", "string"],
+        "expected_type": [
+          "object",
+          "string"
+        ],
         "format": {
           "type": "uuid"
         }
       },
       "does_not_contain": {
-        "expected_type": ["object", "string"],
+        "expected_type": [
+          "object",
+          "string"
+        ],
         "format": {
           "type": "uuid"
         }
@@ -823,7 +937,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -831,8 +947,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -969,7 +1095,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -977,8 +1105,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -1077,7 +1215,9 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
         "custom_validation_only": true
       },
@@ -1085,8 +1225,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         },
+        "custom_validation_only": true
+      },
+      "exists_in_submissions_x_times": {
+        "expected_type": "number",
+        "custom_validation_only": true
+      },
+      "does_not_exist_in_submissions_x_times": {
+        "expected_type": "number",
         "custom_validation_only": true
       }
     }
@@ -1097,14 +1247,18 @@
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         }
       },
       "not_paid": {
         "expected_type": "boolean",
         "format": {
           "type": "enum",
-          "values": [true]
+          "values": [
+            true
+          ]
         }
       }
     }

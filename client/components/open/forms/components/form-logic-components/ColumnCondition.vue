@@ -167,6 +167,15 @@ export default {
         componentData.columns = this.property.columns
       }
 
+      // For submission count operators, always use a plain text input for the count value
+      if (["exists_in_submissions_x_times", "does_not_exist_in_submissions_x_times"].includes(this.content.operator)) {
+        componentData.component = "TextInput"
+        delete componentData.multiple
+        delete componentData.options
+        delete componentData.rows
+        delete componentData.columns
+      }
+
       return componentData
     },
     operators() {
@@ -278,6 +287,11 @@ export default {
       const operator = this.selectedOperator()
       if (operator.expected_type === "boolean") {
         content.value = Boolean(content.value)
+      } else if (operator.expected_type === "number" && content.value !== null && content.value !== undefined) {
+        const parsed = Number(content.value)
+        if (!isNaN(parsed)) {
+          content.value = parsed
+        }
       }
 
       return content
