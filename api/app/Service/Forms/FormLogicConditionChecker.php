@@ -499,11 +499,6 @@ class FormLogicConditionChecker
         $query = FormSubmission::where('form_id', $formId)
             ->where('status', '!=', FormSubmission::STATUS_PARTIAL);
 
-        // SQLite does not support row-level locking for this query path.
-        if ($dbConnection !== 'sqlite') {
-            $query->lockForUpdate();
-        }
-
         if ($dbConnection === 'mysql') {
             // MySQL: Use fully parameterized JSON path query
             // JSON_EXTRACT with CONCAT for safe field ID handling
