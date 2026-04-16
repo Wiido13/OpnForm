@@ -65,23 +65,12 @@
           :selected="selected"
         >
           <span class="flex">
-            <span class="flex-grow">
-              <p
-                :class="[
-                  ui.option({ class: props.ui?.slots?.option }),
-                  option?.disabled ? 'line-through opacity-70' : ''
-                ]"
-              >
-                {{ getOptionName(option) }}
-              </p>
-              <small
-                v-if="option?.disabled && option?.disabled_message"
-                role="note"
-                class="text-neutral-500 dark:text-neutral-400"
-              >
-                {{ option.disabled_message }}
-              </small>
-            </span>
+            <p
+              class="flex-grow"
+              :class="ui.option({ class: props.ui?.slots?.option })"
+            >
+              {{ getOptionName(option) }}
+            </p>
             <span
               v-if="selected"
               class="absolute inset-y-0 right-0 flex items-center pr-4 dark:text-white"
