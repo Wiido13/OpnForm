@@ -82,34 +82,34 @@ class FormOptionCountsController extends Controller
      */
     private function getOptionCounts(Form $form, string $fieldId, string $dbConnection): array
     {
-        $submissions = $form->submissions()
-            ->where('status', '!=', FormSubmission::STATUS_PARTIAL)
-            ->get(['data']);
-
         $counts = [];
 
-        foreach ($submissions as $submission) {
-            $data = $submission->data;
-            if (!isset($data[$fieldId])) {
-                continue;
-            }
-
-            $value = $data[$fieldId];
-
-            if (is_array($value)) {
-                // Multi-select: count each selected option
-                foreach ($value as $optionValue) {
-                    if (is_string($optionValue) || is_numeric($optionValue)) {
-                        $key = (string) $optionValue;
-                        $counts[$key] = ($counts[$key] ?? 0) + 1;
-                    }
+        $form->submissions()
+            ->where('status', '!=', FormSubmission::STATUS_PARTIAL)
+            ->select(['data'])
+            ->cursor()
+            ->each(function ($submission) use ($fieldId, &$counts) {
+                $data = $submission->data;
+                if (!isset($data[$fieldId])) {
+                    return;
                 }
-            } elseif (is_string($value) || is_numeric($value)) {
-                // Single select
-                $key = (string) $value;
-                $counts[$key] = ($counts[$key] ?? 0) + 1;
-            }
-        }
+
+                $value = $data[$fieldId];
+
+                if (is_array($value)) {
+                    // Multi-select: count each selected option
+                    foreach ($value as $optionValue) {
+                        if (is_string($optionValue) || is_numeric($optionValue)) {
+                            $key = (string) $optionValue;
+                            $counts[$key] = ($counts[$key] ?? 0) + 1;
+                        }
+                    }
+                } elseif (is_string($value) || is_numeric($value)) {
+                    // Single select
+                    $key = (string) $value;
+                    $counts[$key] = ($counts[$key] ?? 0) + 1;
+                }
+            });
 
         return $counts;
     }

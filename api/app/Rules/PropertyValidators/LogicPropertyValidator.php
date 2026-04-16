@@ -220,9 +220,7 @@ class LogicPropertyValidator implements PropertyValidatorInterface
     {
         if (!is_array($actions) || count($actions) === 0) {
             // Allow empty actions if option_slot_limit is configured
-            $logic = $this->field['logic'] ?? [];
-            $slotLimit = $logic['option_slot_limit'] ?? null;
-            if ($slotLimit && ($slotLimit['enabled'] ?? false)) {
+            if ($this->hasEnabledSlotLimit()) {
                 return;
             }
             $this->isActionCorrect = false;
@@ -256,6 +254,17 @@ class LogicPropertyValidator implements PropertyValidatorInterface
                 break;
             }
         }
+    }
+
+    /**
+     * Check if the current field has an enabled slot limit configuration.
+     */
+    private function hasEnabledSlotLimit(): bool
+    {
+        $logic = $this->field['logic'] ?? [];
+        $slotLimit = $logic['option_slot_limit'] ?? null;
+
+        return $slotLimit && ($slotLimit['enabled'] ?? false);
     }
 
     private function buildErrorMessage(string $fieldName): string

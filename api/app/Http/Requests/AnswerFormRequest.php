@@ -387,6 +387,7 @@ class AnswerFormRequest extends FormRequest
 
     /**
      * Count existing completed submissions with a specific option value for a field.
+     * Uses a shared lock to avoid race conditions with concurrent submissions.
      */
     private function countOptionSubmissions(string $fieldId, $optionValue): int
     {
@@ -397,7 +398,8 @@ class AnswerFormRequest extends FormRequest
         $dbConnection = \Illuminate\Support\Facades\DB::connection()->getDriverName();
 
         $query = $this->form->submissions()
-            ->where('status', '!=', \App\Models\Forms\FormSubmission::STATUS_PARTIAL);
+            ->where('status', '!=', \App\Models\Forms\FormSubmission::STATUS_PARTIAL)
+            ->lockForUpdate();
 
         if ($dbConnection === 'mysql') {
             $query->whereRaw(
