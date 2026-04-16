@@ -76,6 +76,7 @@
               </p>
               <small
                 v-if="option?.disabled && option?.disabled_message"
+                role="note"
                 class="text-neutral-500 dark:text-neutral-400"
               >
                 {{ option.disabled_message }}

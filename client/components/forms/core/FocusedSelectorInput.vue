@@ -39,6 +39,7 @@
             {{ getOptionName(option) }}
             <small
               v-if="option.disabled && option.disabled_message"
+              role="note"
               class="ml-2 text-xs text-neutral-500 dark:text-neutral-400"
             >
               {{ option.disabled_message }}

@@ -406,6 +406,20 @@ describe('FocusedSelectorInput Component', () => {
       expect(textSpan.text()).toContain('Cupos agotados')
       expect(textSpan.classes()).toContain('line-through')
     })
+
+    it('should not emit selection when clicking disabled option', async () => {
+      const optionsWithDisabledMessage = [
+        { name: 'Curso A', value: 'a', disabled: true, disabled_message: 'Cupos agotados' }
+      ]
+
+      const wrapper = createWrapper({ options: optionsWithDisabledMessage })
+      const button = wrapper.find('button[role="option"]')
+
+      await button.trigger('click')
+
+      expect(wrapper.emitted('update:modelValue')).toBeFalsy()
+      expect(wrapper.emitted('input-filled')).toBeFalsy()
+    })
   })
 
   describe('Object Value Handling', () => {

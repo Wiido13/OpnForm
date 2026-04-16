@@ -212,10 +212,10 @@ const submissionBasedOperators = [
   'does_not_exist_in_submissions_x_times'
 ]
 
-function conditionTreeUsesSubmissionCount(conditions) {
+function hasSubmissionBasedValidationConditions(conditions) {
   if (!conditions) return false
   if (Array.isArray(conditions.children) && conditions.children.length > 0) {
-    return conditions.children.some(child => conditionTreeUsesSubmissionCount(child))
+    return conditions.children.some(child => hasSubmissionBasedValidationConditions(child))
   }
   return submissionBasedOperators.includes(conditions?.value?.operator)
 }
@@ -235,7 +235,7 @@ const shouldResolveDynamicOptionAvailability = computed(() => {
   if (!field || !['select', 'multi_select'].includes(field.type)) return false
   if (!form.value?.slug) return false
   const conditions = field?.validation?.error_conditions?.conditions
-  return conditionTreeUsesSubmissionCount(conditions)
+  return hasSubmissionBasedValidationConditions(conditions)
 })
 
 const formPayloadForValidation = computed(() => {
@@ -250,7 +250,7 @@ const formPayloadForValidation = computed(() => {
 })
 
 const resolvedSelectOptions = ref(baseSelectOptions.value ?? [])
-let optionAvailabilityRequestId = 0
+const optionAvailabilityRequestId = ref(0)
 
 const refreshOptionAvailability = async () => {
   const field = props.block
@@ -265,7 +265,7 @@ const refreshOptionAvailability = async () => {
     return
   }
 
-  const requestId = ++optionAvailabilityRequestId
+  const requestId = ++optionAvailabilityRequestId.value
   const validateOnlyField = field.id
   const slug = form.value?.slug
   const basePayload = { ...formPayloadForValidation.value }
@@ -296,22 +296,28 @@ const refreshOptionAvailability = async () => {
     }
   }))
 
-  if (requestId === optionAvailabilityRequestId) {
+  if (requestId === optionAvailabilityRequestId.value) {
     resolvedSelectOptions.value = availability
   }
 }
 
 const debouncedRefreshOptionAvailability = debounce(() => {
   refreshOptionAvailability()
-}, 250)
+}, 300)
 
 watch(
   [baseSelectOptions, shouldResolveDynamicOptionAvailability, formPayloadForValidation, () => form.value?.slug],
   () => {
     debouncedRefreshOptionAvailability()
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
+
+onUnmounted(() => {
+  if (typeof debouncedRefreshOptionAvailability?.clear === 'function') {
+    debouncedRefreshOptionAvailability.clear()
+  }
+})
 
 const boundProps = computed(() => {
   const field = props.block
@@ -419,4 +425,3 @@ const editFieldOptions = () => {
   workingFormStore.openSettingsForField(props.block, true)
 }
 </script>
-

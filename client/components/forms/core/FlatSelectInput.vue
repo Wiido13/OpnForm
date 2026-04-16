@@ -58,6 +58,7 @@
                 </p>
                 <small
                   v-if="isOptionUnavailable(option) && getOptionDisabledMessage(option)"
+                  role="note"
                   class="text-neutral-500 dark:text-neutral-400"
                 >
                   {{ getOptionDisabledMessage(option) }}
