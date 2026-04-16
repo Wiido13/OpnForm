@@ -15,7 +15,6 @@ import { useAmplitude } from '~/composables/useAmplitude'
 import { useConfetti } from '~/composables/useConfetti'
 import { cloneDeep } from 'lodash'
 import { useFieldState } from './useFieldState'
-import { useOptionSlotLimit } from '~/composables/forms/useOptionSlotLimit'
 
 /**
  * @fileoverview Main orchestrator composable for form operations.
@@ -51,9 +50,6 @@ export function useFormManager(initialFormConfig, initialMode = FormMode.LIVE, o
 
   // Centralized field state (single instance per manager)
   const fieldState = useFieldState(formDataRef, computed(() => config.value), computed(() => strategy.value))
-
-  // Option slot limit service (fetches submission counts for sold-out options)
-  const optionSlotLimit = useOptionSlotLimit(config)
 
   // Instantiate pending submission service (handles localStorage saving)
   const pendingSubmissionService = usePendingSubmission(config, formDataRef)
@@ -133,11 +129,6 @@ export function useFormManager(initialFormConfig, initialMode = FormMode.LIVE, o
     // Ensure structure is built after initialization
     replaceStructure()
     
-    // Fetch option counts for slot limits (if any fields have them configured)
-    if (import.meta.client && optionSlotLimit.hasSlotLimitFields.value) {
-      optionSlotLimit.fetchOptionCounts()
-    }
-
     // Start partial submission sync if enabled in both config and strategy
     if (import.meta.client && config.value.enable_partial_submissions && strategy.value.submission.enablePartialSubmissions) {
       partialSubmissionService.startSync()
@@ -408,7 +399,6 @@ export function useFormManager(initialFormConfig, initialMode = FormMode.LIVE, o
     // Composables (Expose if direct access needed, often not necessary)
     structure,
     fieldState,     // Expose centralized field state service
-    optionSlotLimit, // Expose option slot limit service
     payment,        // Expose payment service
 
     // Core Methods

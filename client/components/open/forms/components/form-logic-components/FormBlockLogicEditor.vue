@@ -121,68 +121,6 @@
       Note that hidden fields can never be required.
     </p>
 
-    <!-- Option Slot Limit Section (only for select/multi_select fields) -->
-    <div v-if="isSelectField" class="mt-4 border-t pt-4">
-      <p class="text-xs font-medium text-gray-600 mb-2">Option Slot Limit</p>
-      <p class="text-neutral-400 text-xs mb-3">
-        Automatically disable and mark options as sold out when they reach a submission limit.
-      </p>
-
-      <div class="p-3 border border-gray-200 rounded-lg bg-gray-50/50 space-y-3">
-        <!-- Enable toggle -->
-        <div class="flex items-center justify-between">
-          <label class="text-sm text-gray-700">Enable slot limit</label>
-          <UToggle
-            v-model="slotLimitEnabled"
-            size="sm"
-          />
-        </div>
-
-        <template v-if="slotLimitEnabled">
-          <!-- Max slots -->
-          <div>
-            <label class="text-xs text-gray-600 mb-1 block">Max submissions per option</label>
-            <input
-              v-model.number="slotLimitMaxSlots"
-              type="number"
-              min="1"
-              class="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="e.g. 5"
-            >
-          </div>
-
-          <!-- Sold out text -->
-          <div>
-            <label class="text-xs text-gray-600 mb-1 block">Sold out text</label>
-            <input
-              v-model="slotLimitSoldOutText"
-              type="text"
-              class="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="e.g. Sold out"
-            >
-          </div>
-
-          <!-- Strikethrough toggle -->
-          <div class="flex items-center justify-between">
-            <label class="text-sm text-gray-700">Strikethrough option text</label>
-            <UToggle
-              v-model="slotLimitStrikethrough"
-              size="sm"
-            />
-          </div>
-
-          <!-- Disable option toggle -->
-          <div class="flex items-center justify-between">
-            <label class="text-sm text-gray-700">Disable sold out options</label>
-            <UToggle
-              v-model="slotLimitDisableOption"
-              size="sm"
-            />
-          </div>
-        </template>
-      </div>
-    </div>
-
     <UModal
       v-model:open="showCopyFormModal"
       title="Copy logic from another field"
@@ -288,9 +226,6 @@ export default {
   },
 
   computed: {
-    isSelectField() {
-      return ['select', 'multi_select'].includes(this.field?.type)
-    },
     conditionsCount() {
       if (this.logic.conditions === null || this.logic.conditions === undefined) return 0
       // Count the number of rules/conditions recursively
@@ -368,63 +303,6 @@ export default {
         ]
       }
     },
-    slotLimitEnabled: {
-      get() {
-        return !!(this.logic.option_slot_limit?.enabled)
-      },
-      set(val) {
-        if (!this.logic.option_slot_limit) {
-          this.logic.option_slot_limit = {
-            enabled: false,
-            max_slots: 1,
-            sold_out_text: 'Sold out',
-            strikethrough: true,
-            disable_option: true,
-          }
-        }
-        this.logic.option_slot_limit.enabled = val
-      }
-    },
-    slotLimitMaxSlots: {
-      get() {
-        return this.logic.option_slot_limit?.max_slots || 1
-      },
-      set(val) {
-        if (this.logic.option_slot_limit) {
-          this.logic.option_slot_limit.max_slots = val
-        }
-      }
-    },
-    slotLimitSoldOutText: {
-      get() {
-        return this.logic.option_slot_limit?.sold_out_text || 'Sold out'
-      },
-      set(val) {
-        if (this.logic.option_slot_limit) {
-          this.logic.option_slot_limit.sold_out_text = val
-        }
-      }
-    },
-    slotLimitStrikethrough: {
-      get() {
-        return this.logic.option_slot_limit?.strikethrough !== false
-      },
-      set(val) {
-        if (this.logic.option_slot_limit) {
-          this.logic.option_slot_limit.strikethrough = val
-        }
-      }
-    },
-    slotLimitDisableOption: {
-      get() {
-        return this.logic.option_slot_limit?.disable_option !== false
-      },
-      set(val) {
-        if (this.logic.option_slot_limit) {
-          this.logic.option_slot_limit.disable_option = val
-        }
-      }
-    },
   },
 
   watch: {
@@ -483,7 +361,6 @@ export default {
     clearAll() {
       this.logic.conditions = null
       this.logic.actions = []
-      delete this.logic.option_slot_limit
       this.refreshActions()
     },
     onActionInput() {

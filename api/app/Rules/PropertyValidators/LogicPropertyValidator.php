@@ -15,7 +15,6 @@ class LogicPropertyValidator implements PropertyValidatorInterface
         'require-answer',
         'enable-block',
         'disable-block',
-        'disable-sold-out-options',
     ];
 
     private static ?array $conditionMappingData = null;
@@ -62,9 +61,6 @@ class LogicPropertyValidator implements PropertyValidatorInterface
 
         // Check actions
         $this->checkActions($logic['actions'] ?? null);
-
-        // Check option_slot_limit if present
-        $this->checkOptionSlotLimit($logic);
 
         // Build error message if validation failed
         if (!$this->isConditionCorrect || !$this->isActionCorrect) {
@@ -219,10 +215,6 @@ class LogicPropertyValidator implements PropertyValidatorInterface
     private function checkActions(mixed $actions): void
     {
         if (!is_array($actions) || count($actions) === 0) {
-            // Allow empty actions if option_slot_limit is configured
-            if ($this->hasEnabledSlotLimit()) {
-                return;
-            }
             $this->isActionCorrect = false;
             return;
         }
@@ -234,15 +226,6 @@ class LogicPropertyValidator implements PropertyValidatorInterface
         $isDisabled = $this->field['disabled'] ?? false;
 
         foreach ($actions as $action) {
-            // disable-sold-out-options is only valid for select/multi_select fields
-            if ($action === 'disable-sold-out-options') {
-                if (!in_array($fieldType, ['select', 'multi_select'])) {
-                    $this->isActionCorrect = false;
-                    break;
-                }
-                continue;
-            }
-
             if (
                 !in_array($action, self::ACTIONS_VALUES) ||
                 (in_array($fieldType, $layoutBlocks) && !in_array($action, ['hide-block', 'show-block'])) ||
@@ -254,17 +237,6 @@ class LogicPropertyValidator implements PropertyValidatorInterface
                 break;
             }
         }
-    }
-
-    /**
-     * Check if the current field has an enabled slot limit configuration.
-     */
-    private function hasEnabledSlotLimit(): bool
-    {
-        $logic = $this->field['logic'] ?? [];
-        $slotLimit = $logic['option_slot_limit'] ?? null;
-
-        return $slotLimit && ($slotLimit['enabled'] ?? false);
     }
 
     private function buildErrorMessage(string $fieldName): string
@@ -282,49 +254,5 @@ class LogicPropertyValidator implements PropertyValidatorInterface
         }
 
         return $message;
-    }
-
-    /**
-     * Validates the option_slot_limit configuration within logic.
-     */
-    private function checkOptionSlotLimit(array $logic): void
-    {
-        $slotLimit = $logic['option_slot_limit'] ?? null;
-
-        if ($slotLimit === null) {
-            return;
-        }
-
-        if (!is_array($slotLimit)) {
-            $this->isConditionCorrect = false;
-            $this->conditionErrors[] = 'option_slot_limit must be an object';
-            return;
-        }
-
-        // If not enabled, no further validation needed
-        if (!($slotLimit['enabled'] ?? false)) {
-            return;
-        }
-
-        // Only valid for select/multi_select fields
-        $fieldType = $this->field['type'] ?? null;
-        if (!in_array($fieldType, ['select', 'multi_select'])) {
-            $this->isConditionCorrect = false;
-            $this->conditionErrors[] = 'option_slot_limit is only valid for select and multi_select fields';
-            return;
-        }
-
-        // max_slots must be a positive integer
-        if (!isset($slotLimit['max_slots']) || !is_numeric($slotLimit['max_slots']) || (int) $slotLimit['max_slots'] < 1) {
-            $this->isConditionCorrect = false;
-            $this->conditionErrors[] = 'option_slot_limit max_slots must be a positive number';
-            return;
-        }
-
-        // sold_out_text must be a string if provided
-        if (isset($slotLimit['sold_out_text']) && !is_string($slotLimit['sold_out_text'])) {
-            $this->isConditionCorrect = false;
-            $this->conditionErrors[] = 'option_slot_limit sold_out_text must be a string';
-        }
     }
 }

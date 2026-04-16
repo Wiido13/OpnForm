@@ -252,18 +252,6 @@ const boundProps = computed(() => {
       inputProperties.minSelection = field.min_selection || null
       inputProperties.maxSelection = field.max_selection || null
     }
-
-    // Option slot limit: pass sold-out data to select components
-    const slotLimitService = props.formManager?.optionSlotLimit
-    if (slotLimitService) {
-      const processed = slotLimitService.processOptions(field, inputProperties.options)
-      if (processed.disabledOptions.length > 0) {
-        inputProperties.disableOptions = processed.disabledOptions
-      }
-      if (Object.keys(processed.soldOutMap).length > 0) {
-        inputProperties.soldOutMap = processed.soldOutMap
-      }
-    }
   } else if (field.type === 'date') {
     inputProperties.dateFormat = field.date_format
     inputProperties.timeFormat = field.time_format
