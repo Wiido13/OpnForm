@@ -138,8 +138,16 @@
         </div>
 
         <template v-if="slotLimitEnabled">
-          <!-- Max slots -->
-          <div>
+          <!-- Per-option toggle -->
+          <div class="flex items-center justify-between">
+            <label class="text-sm text-gray-700">Set limit per option</label>
+            <USwitch
+              v-model="slotLimitPerOption"
+            />
+          </div>
+
+          <!-- Default max slots (shown when NOT per-option, or as fallback label when per-option) -->
+          <div v-if="!slotLimitPerOption">
             <label class="text-xs text-gray-600 mb-1 block">Max submissions per option</label>
             <input
               v-model.number="slotLimitMaxSlots"
@@ -148,6 +156,28 @@
               class="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="e.g. 5"
             >
+          </div>
+
+          <!-- Per-option limits -->
+          <div v-if="slotLimitPerOption && fieldOptions.length > 0">
+            <label class="text-xs text-gray-600 mb-1 block">Max submissions per option</label>
+            <div class="space-y-2">
+              <div
+                v-for="option in fieldOptions"
+                :key="option"
+                class="flex items-center gap-2"
+              >
+                <span class="text-sm text-gray-700 flex-1 truncate" :title="option">{{ option }}</span>
+                <input
+                  :value="perOptionLimitValue(option)"
+                  type="number"
+                  min="1"
+                  class="w-24 text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="limit"
+                  @input="setPerOptionLimit(option, $event.target.value)"
+                >
+              </div>
+            </div>
           </div>
 
           <!-- Sold out text -->
@@ -288,6 +318,10 @@ export default {
     isSelectField() {
       return ['select', 'multi_select'].includes(this.field?.type)
     },
+    fieldOptions() {
+      if (!this.isSelectField || !this.field[this.field.type]?.options) return []
+      return this.field[this.field.type].options.map(opt => opt.name)
+    },
     conditionsCount() {
       if (this.logic.conditions === null || this.logic.conditions === undefined) return 0
       // Count the number of rules/conditions recursively
@@ -378,9 +412,42 @@ export default {
               sold_out_text: 'Sold out',
               strikethrough: true,
               disable_option: true,
+              per_option_limits: {},
             }),
             enabled: val,
           },
+        }
+      }
+    },
+    slotLimitPerOption: {
+      get() {
+        const limits = this.logic.option_slot_limit?.per_option_limits
+        return limits && Object.keys(limits).length > 0
+      },
+      set(val) {
+        if (!this.logic.option_slot_limit) return
+        if (val) {
+          // Initialize per_option_limits from current max_slots
+          const limits = {}
+          const defaultMax = this.logic.option_slot_limit.max_slots || 1
+          for (const optName of this.fieldOptions) {
+            limits[optName] = defaultMax
+          }
+          this.logic.option_slot_limit = {
+            ...this.logic.option_slot_limit,
+            per_option_limits: limits,
+            max_slots: 0,
+          }
+        } else {
+          // Revert to uniform limit using the first per-option value or 1
+          const limits = this.logic.option_slot_limit.per_option_limits || {}
+          const values = Object.values(limits).filter(v => v > 0)
+          const fallback = values.length > 0 ? values[0] : 1
+          this.logic.option_slot_limit = {
+            ...this.logic.option_slot_limit,
+            per_option_limits: {},
+            max_slots: fallback,
+          }
         }
       }
     },
@@ -454,6 +521,23 @@ export default {
   },
 
   methods: {
+    perOptionLimitValue(optionName) {
+      return this.logic.option_slot_limit?.per_option_limits?.[optionName] || ''
+    },
+    setPerOptionLimit(optionName, value) {
+      if (!this.logic.option_slot_limit) return
+      if (!this.logic.option_slot_limit.per_option_limits) {
+        this.logic.option_slot_limit.per_option_limits = {}
+      }
+      const numVal = parseInt(value, 10)
+      if (!isNaN(numVal) && numVal >= 1) {
+        this.logic.option_slot_limit.per_option_limits[optionName] = numVal
+      } else if (value === '' || value === null || value === undefined) {
+        delete this.logic.option_slot_limit.per_option_limits[optionName]
+      }
+      // Trigger reactivity
+      this.logic = { ...this.logic }
+    },
     countConditions(conditions) {
       if (!conditions) return 0
       

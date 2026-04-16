@@ -314,11 +314,30 @@ class LogicPropertyValidator implements PropertyValidatorInterface
             return;
         }
 
-        // max_slots must be a positive integer
-        if (!isset($slotLimit['max_slots']) || !is_numeric($slotLimit['max_slots']) || (int) $slotLimit['max_slots'] < 1) {
+        // max_slots must be a positive integer (used as default when per_option_limits is not set)
+        $hasDefaultMaxSlots = isset($slotLimit['max_slots']) && is_numeric($slotLimit['max_slots']) && (int) $slotLimit['max_slots'] >= 1;
+        $hasPerOptionLimits = isset($slotLimit['per_option_limits']) && is_array($slotLimit['per_option_limits']) && !empty($slotLimit['per_option_limits']);
+
+        if (!$hasDefaultMaxSlots && !$hasPerOptionLimits) {
             $this->isConditionCorrect = false;
-            $this->conditionErrors[] = 'option_slot_limit max_slots must be a positive number';
+            $this->conditionErrors[] = 'option_slot_limit must have max_slots (positive number) or per_option_limits';
             return;
+        }
+
+        // Validate per_option_limits values if provided
+        if (isset($slotLimit['per_option_limits'])) {
+            if (!is_array($slotLimit['per_option_limits'])) {
+                $this->isConditionCorrect = false;
+                $this->conditionErrors[] = 'option_slot_limit per_option_limits must be an object';
+                return;
+            }
+            foreach ($slotLimit['per_option_limits'] as $optionName => $limit) {
+                if (!is_numeric($limit) || (int) $limit < 1) {
+                    $this->isConditionCorrect = false;
+                    $this->conditionErrors[] = "option_slot_limit per_option_limits value for '$optionName' must be a positive number";
+                    return;
+                }
+            }
         }
 
         // sold_out_text must be a string if provided
