@@ -35,8 +35,14 @@
           </span>
 
           <!-- Option text -->
-          <span :class="textClasses()">
+          <span :class="[textClasses(), option.disabled ? 'line-through opacity-70' : '']">
             {{ getOptionName(option) }}
+            <small
+              v-if="option.disabled && option.disabled_message"
+              class="ml-2 text-xs text-neutral-500 dark:text-neutral-400"
+            >
+              {{ option.disabled_message }}
+            </small>
           </span>
 
           <!-- Checkmark for selected state -->
@@ -159,7 +165,7 @@ const optionClasses = (option) => {
     borderRadius: resolvedBorderRadius.value,
     selected,
     animating: isAnimating,
-    disabled: props.disabled
+    disabled: props.disabled || !!option?.disabled
   }).option({ class: props.ui?.slots?.option })
 }
 

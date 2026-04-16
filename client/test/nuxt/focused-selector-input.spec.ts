@@ -393,6 +393,19 @@ describe('FocusedSelectorInput Component', () => {
       expect(buttons[0].attributes('disabled')).toBeUndefined()
       expect(buttons[1].attributes('disabled')).toBeDefined()
     })
+
+    it('should display disabled reason with strike-through style', () => {
+      const optionsWithDisabledMessage = [
+        { name: 'Curso A', value: 'a', disabled: true, disabled_message: 'Cupos agotados' }
+      ]
+
+      const wrapper = createWrapper({ options: optionsWithDisabledMessage })
+      const textSpan = wrapper.find('button[role="option"] span.flex-1')
+
+      expect(textSpan.text()).toContain('Curso A')
+      expect(textSpan.text()).toContain('Cupos agotados')
+      expect(textSpan.classes()).toContain('line-through')
+    })
   })
 
   describe('Object Value Handling', () => {

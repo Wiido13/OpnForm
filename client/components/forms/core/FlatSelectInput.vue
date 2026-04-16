@@ -23,9 +23,9 @@
           :key="option[optionKey]"
           :role="multiple?'checkbox':'radio'"
           :aria-checked="isSelected(option[optionKey])"
-          :class="ui.option({ optionDisabled: disabled || disableOptions.includes(option[optionKey]) || isOptionDisabled(option[optionKey]), class: props.ui?.slots?.option })"
+          :class="ui.option({ optionDisabled: isOptionUnavailable(option), class: props.ui?.slots?.option })"
           :tabindex="getOptionTabIndex(index)"
-          @click="onSelect(option[optionKey])"
+          @click="onSelect(option)"
           @keydown="handleKeydown($event, index)"
         >
           <template v-if="multiple">
@@ -43,18 +43,26 @@
             />
           </template>
           <UTooltip
-            :text="disableOptionsTooltip"
-            :disabled="!disableOptions.includes(option[optionKey])"
+            :text="getOptionDisabledMessage(option)"
+            :disabled="!isOptionUnavailable(option)"
             class="w-full"
           >
             <slot
               name="option"
               :option="option"
               :selected="isSelected(option[optionKey])"
-            >
-              <p class="flex-grow">
-                {{ option[displayKey] }}
-              </p>
+              >
+              <div class="flex-grow">
+                <p :class="isOptionUnavailable(option) ? 'line-through opacity-70' : ''">
+                  {{ option[displayKey] }}
+                </p>
+                <small
+                  v-if="isOptionUnavailable(option) && getOptionDisabledMessage(option)"
+                  class="text-neutral-500 dark:text-neutral-400"
+                >
+                  {{ getOptionDisabledMessage(option) }}
+                </small>
+              </div>
             </slot>
           </UTooltip>
         </div>
@@ -157,8 +165,9 @@ export default {
     },
   },
   methods: {
-    onSelect(value) {
-      if (this.disabled || this.disableOptions.includes(value) || this.isOptionDisabled(value)) {
+    onSelect(option) {
+      const value = option?.[this.optionKey]
+      if (!option || this.isOptionUnavailable(option)) {
         return
       }
 
@@ -202,6 +211,15 @@ export default {
       // Allow deselection of already selected options
       const isSelected = this.isSelected(value)
       return !isSelected && this.maxSelectionReached
+    },
+    isOptionUnavailable(option) {
+      if (!option) return true
+      const value = option[this.optionKey]
+      return this.disabled || !!option.disabled || this.disableOptions.includes(value) || this.isOptionDisabled(value)
+    },
+    getOptionDisabledMessage(option) {
+      if (!option) return this.disableOptionsTooltip
+      return option.disabled_message || this.disableOptionsTooltip
     },
     getOptionName(option) {
       return option ? option[this.displayKey] : ''
