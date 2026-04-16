@@ -530,9 +530,9 @@ export default {
         this.logic.option_slot_limit.per_option_limits = {}
       }
       const numVal = parseInt(value, 10)
-      if (numVal >= 1) {
+      if (!isNaN(numVal) && numVal >= 1) {
         this.logic.option_slot_limit.per_option_limits[optionName] = numVal
-      } else {
+      } else if (value === '' || value === null || value === undefined) {
         delete this.logic.option_slot_limit.per_option_limits[optionName]
       }
       // Trigger reactivity
