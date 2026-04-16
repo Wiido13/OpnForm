@@ -359,8 +359,11 @@ class AnswerFormRequest extends FormRequest
                 continue;
             }
 
-            $maxSlots = (int) ($slotLimit['max_slots'] ?? 0);
-            if ($maxSlots <= 0) {
+            $defaultMaxSlots = (int) ($slotLimit['max_slots'] ?? 0);
+            $perOptionLimits = $slotLimit['per_option_limits'] ?? [];
+
+            // Need at least a default or per-option limits
+            if ($defaultMaxSlots <= 0 && empty($perOptionLimits)) {
                 continue;
             }
 
@@ -374,6 +377,15 @@ class AnswerFormRequest extends FormRequest
             $soldOutText = $slotLimit['sold_out_text'] ?? 'Sold out';
 
             foreach ($valuesToCheck as $optionValue) {
+                // Use per-option limit if set, otherwise fall back to default
+                $maxSlots = isset($perOptionLimits[$optionValue]) && is_numeric($perOptionLimits[$optionValue])
+                    ? (int) $perOptionLimits[$optionValue]
+                    : $defaultMaxSlots;
+
+                if ($maxSlots <= 0) {
+                    continue;
+                }
+
                 $count = $this->countOptionSubmissions($fieldId, $optionValue);
                 if ($count >= $maxSlots) {
                     $validator->errors()->add(
@@ -387,7 +399,6 @@ class AnswerFormRequest extends FormRequest
 
     /**
      * Count existing completed submissions with a specific option value for a field.
-     * Uses a shared lock to avoid race conditions with concurrent submissions.
      */
     private function countOptionSubmissions(string $fieldId, $optionValue): int
     {
@@ -398,8 +409,7 @@ class AnswerFormRequest extends FormRequest
         $dbConnection = \Illuminate\Support\Facades\DB::connection()->getDriverName();
 
         $query = $this->form->submissions()
-            ->where('status', '!=', \App\Models\Forms\FormSubmission::STATUS_PARTIAL)
-            ->lockForUpdate();
+            ->where('status', '!=', \App\Models\Forms\FormSubmission::STATUS_PARTIAL);
 
         if ($dbConnection === 'mysql') {
             $query->whereRaw(

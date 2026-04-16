@@ -48,6 +48,7 @@ class FormOptionCountsController extends Controller
                 'id' => $property['id'],
                 'type' => $property['type'],
                 'max_slots' => (int) ($slotLimit['max_slots'] ?? 0),
+                'per_option_limits' => $slotLimit['per_option_limits'] ?? [],
             ];
         }
 
@@ -71,6 +72,7 @@ class FormOptionCountsController extends Controller
             $result[$fieldId] = [
                 'counts' => $counts,
                 'max_slots' => $field['max_slots'],
+                'per_option_limits' => (object) $field['per_option_limits'],
             ];
         }
 

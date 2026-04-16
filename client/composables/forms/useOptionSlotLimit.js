@@ -21,7 +21,9 @@ export function useOptionSlotLimit(formConfigRef) {
     return config.properties.some((prop) => {
       if (!['select', 'multi_select'].includes(prop.type)) return false
       const slotLimit = prop.logic?.option_slot_limit
-      return slotLimit?.enabled && slotLimit?.max_slots > 0
+      if (!slotLimit?.enabled) return false
+      const hasPerOptionLimits = slotLimit.per_option_limits && Object.keys(slotLimit.per_option_limits).length > 0
+      return slotLimit.max_slots > 0 || hasPerOptionLimits
     })
   })
 
@@ -54,7 +56,9 @@ export function useOptionSlotLimit(formConfigRef) {
   function getFieldSlotLimit(field) {
     if (!field || !['select', 'multi_select'].includes(field.type)) return null
     const slotLimit = field.logic?.option_slot_limit
-    if (!slotLimit?.enabled || !slotLimit?.max_slots) return null
+    if (!slotLimit?.enabled) return null
+    const hasPerOptionLimits = slotLimit.per_option_limits && Object.keys(slotLimit.per_option_limits).length > 0
+    if (!slotLimit.max_slots && !hasPerOptionLimits) return null
     return slotLimit
   }
 
@@ -70,10 +74,16 @@ export function useOptionSlotLimit(formConfigRef) {
     if (!fieldData) return []
 
     const counts = fieldData.counts || {}
-    const maxSlots = slotLimit.max_slots
+    const defaultMaxSlots = slotLimit.max_slots || 0
+    const perOptionLimits = fieldData.per_option_limits || slotLimit.per_option_limits || {}
 
     return Object.entries(counts)
-      .filter(([, count]) => count >= maxSlots)
+      .filter(([optionName, count]) => {
+        const maxSlots = (perOptionLimits[optionName] != null && Number(perOptionLimits[optionName]) >= 1)
+          ? Number(perOptionLimits[optionName])
+          : defaultMaxSlots
+        return maxSlots > 0 && count >= maxSlots
+      })
       .map(([optionName]) => optionName)
   }
 
