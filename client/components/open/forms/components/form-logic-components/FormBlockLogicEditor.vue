@@ -132,9 +132,8 @@
         <!-- Enable toggle -->
         <div class="flex items-center justify-between">
           <label class="text-sm text-gray-700">Enable slot limit</label>
-          <UToggle
+          <USwitch
             v-model="slotLimitEnabled"
-            size="sm"
           />
         </div>
 
@@ -165,18 +164,16 @@
           <!-- Strikethrough toggle -->
           <div class="flex items-center justify-between">
             <label class="text-sm text-gray-700">Strikethrough option text</label>
-            <UToggle
+            <USwitch
               v-model="slotLimitStrikethrough"
-              size="sm"
             />
           </div>
 
           <!-- Disable option toggle -->
           <div class="flex items-center justify-between">
             <label class="text-sm text-gray-700">Disable sold out options</label>
-            <UToggle
+            <USwitch
               v-model="slotLimitDisableOption"
-              size="sm"
             />
           </div>
         </template>
@@ -373,16 +370,18 @@ export default {
         return !!(this.logic.option_slot_limit?.enabled)
       },
       set(val) {
-        if (!this.logic.option_slot_limit) {
-          this.logic.option_slot_limit = {
-            enabled: false,
-            max_slots: 1,
-            sold_out_text: 'Sold out',
-            strikethrough: true,
-            disable_option: true,
-          }
+        this.logic = {
+          ...this.logic,
+          option_slot_limit: {
+            ...(this.logic.option_slot_limit || {
+              max_slots: 1,
+              sold_out_text: 'Sold out',
+              strikethrough: true,
+              disable_option: true,
+            }),
+            enabled: val,
+          },
         }
-        this.logic.option_slot_limit.enabled = val
       }
     },
     slotLimitMaxSlots: {
