@@ -322,4 +322,99 @@ class AnswerFormRequest extends FormRequest
 
         $this->merge($mergeData);
     }
+
+    /**
+     * Configure the validator instance to check option slot limits after standard validation.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->any()) {
+                return;
+            }
+
+            $this->validateOptionSlotLimits($validator);
+        });
+    }
+
+    /**
+     * Validate that selected options haven't exceeded their slot limits.
+     */
+    private function validateOptionSlotLimits($validator): void
+    {
+        $data = $this->toArray();
+
+        foreach ($this->form->properties as $property) {
+            if (!in_array($property['type'], ['select', 'multi_select'])) {
+                continue;
+            }
+
+            $logic = $property['logic'] ?? null;
+            if (!$logic || !is_array($logic)) {
+                continue;
+            }
+
+            $slotLimit = $logic['option_slot_limit'] ?? null;
+            if (!$slotLimit || !($slotLimit['enabled'] ?? false)) {
+                continue;
+            }
+
+            $maxSlots = (int) ($slotLimit['max_slots'] ?? 0);
+            if ($maxSlots <= 0) {
+                continue;
+            }
+
+            $fieldId = $property['id'];
+            $selectedValue = $data[$fieldId] ?? null;
+            if ($selectedValue === null) {
+                continue;
+            }
+
+            $valuesToCheck = is_array($selectedValue) ? $selectedValue : [$selectedValue];
+            $soldOutText = $slotLimit['sold_out_text'] ?? 'Sold out';
+
+            foreach ($valuesToCheck as $optionValue) {
+                $count = $this->countOptionSubmissions($fieldId, $optionValue);
+                if ($count >= $maxSlots) {
+                    $validator->errors()->add(
+                        $fieldId,
+                        "\"$optionValue\" - $soldOutText"
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Count existing completed submissions with a specific option value for a field.
+     * Uses a shared lock to avoid race conditions with concurrent submissions.
+     */
+    private function countOptionSubmissions(string $fieldId, $optionValue): int
+    {
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $fieldId)) {
+            return 0;
+        }
+
+        $dbConnection = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+
+        $query = $this->form->submissions()
+            ->where('status', '!=', \App\Models\Forms\FormSubmission::STATUS_PARTIAL)
+            ->lockForUpdate();
+
+        if ($dbConnection === 'mysql') {
+            $query->whereRaw(
+                "JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('\$.\"', ?, '\"'))) = ?",
+                [$fieldId, $optionValue]
+            );
+        } elseif ($dbConnection === 'pgsql') {
+            $query->whereRaw("data->? = ?::jsonb", [$fieldId, json_encode($optionValue)]);
+        } elseif ($dbConnection === 'sqlite') {
+            $jsonPath = '$."' . $fieldId . '"';
+            $query->whereRaw("json_extract(data, ?) = ?", [$jsonPath, $optionValue]);
+        } else {
+            return 0;
+        }
+
+        return $query->count();
+    }
 }

@@ -30,6 +30,8 @@
       :size="resolvedSize"
       :border-radius="resolvedBorderRadius"
       :ui="ui"
+      :disable-options="disableOptions"
+      :sold-out-map="soldOutMap"
       @update-options="updateOptions"
       @update:model-value="updateModelValue"
     >
@@ -67,9 +69,15 @@
           <span class="flex">
             <p
               class="flex-grow"
-              :class="ui.option({ class: props.ui?.slots?.option })"
+              :class="[
+                ui.option({ class: props.ui?.slots?.option }),
+                { 'line-through opacity-60': soldOutMap[option[optionKey]] && soldOutMap[option[optionKey]].strikethrough }
+              ]"
             >
               {{ getOptionName(option) }}
+              <span v-if="soldOutMap[option[optionKey]]" class="text-xs opacity-70 ml-1 italic">
+                ({{ soldOutMap[option[optionKey]].soldOutText }})
+              </span>
             </p>
             <span
               v-if="selected"
@@ -138,7 +146,9 @@ export default {
     dropdownClass: { type: String, default: 'w-full' },
     remote: { type: Function, default: null },
     minSelection: { type: Number, default: null },
-    maxSelection: { type: Number, default: null }
+    maxSelection: { type: Number, default: null },
+    disableOptions: { type: Array, default: () => [] },
+    soldOutMap: { type: Object, default: () => ({}) }
   },
   setup(props, context) {
     const additionalVariants = computed(() => ({
