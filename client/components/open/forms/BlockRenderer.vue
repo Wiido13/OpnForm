@@ -101,8 +101,6 @@ import { useComponentRegistry } from '~/composables/components/useComponentRegis
 import TextBlock from '~/components/forms/core/TextBlock.vue'
 import { shuffleArray } from '~/lib/utils.js'
 import { useParseMention } from '@/composables/components/useParseMention'
-import { formsApi } from '~/api/forms'
-import debounce from 'debounce'
 
 const props = defineProps({
   block: { type: Object, required: false, default: null },
@@ -205,119 +203,13 @@ const roundedClass = computed(() => {
   return map[radius] || 'rounded-lg'
 })
 
-const submissionBasedOperators = [
-  'exists_in_submissions',
-  'does_not_exist_in_submissions',
-  'exists_in_submissions_x_times',
-  'does_not_exist_in_submissions_x_times'
-]
-
-function hasSubmissionBasedValidationConditions(conditions) {
-  if (!conditions) return false
-  if (Array.isArray(conditions.children) && conditions.children.length > 0) {
-    return conditions.children.some(child => hasSubmissionBasedValidationConditions(child))
-  }
-  return submissionBasedOperators.includes(conditions?.value?.operator)
-}
-
-const baseSelectOptions = computed(() => {
+// Map select options once at component creation (shuffle if enabled)
+const selectOptions = (() => {
   const field = props.block
   if (!field || !['select', 'multi_select'].includes(field.type)) return null
-  const options = field[field.type]?.options?.map((option) => ({
-    name: option.name,
-    value: option.name
-  })) ?? []
+  const options = field[field.type]?.options?.map(option => ({ name: option.name, value: option.name })) ?? []
   return field.shuffle_options && options.length > 1 ? shuffleArray(options) : options
-})
-
-const shouldResolveDynamicOptionAvailability = computed(() => {
-  const field = props.block
-  if (!field || !['select', 'multi_select'].includes(field.type)) return false
-  if (!form.value?.slug) return false
-  const conditions = field?.validation?.error_conditions?.conditions
-  return hasSubmissionBasedValidationConditions(conditions)
-})
-
-const formPayloadForValidation = computed(() => {
-  const payload = {}
-  const properties = form.value?.properties || []
-  const currentValues = dataForm.value || {}
-  properties.forEach((property) => {
-    if (!property?.id) return
-    payload[property.id] = currentValues[property.id] ?? null
-  })
-  return payload
-})
-
-const resolvedSelectOptions = ref(baseSelectOptions.value ?? [])
-const optionAvailabilityRequestId = ref(0)
-
-const refreshOptionAvailability = async () => {
-  const field = props.block
-  const options = baseSelectOptions.value ?? []
-  if (!field || !['select', 'multi_select'].includes(field.type) || options.length === 0) {
-    resolvedSelectOptions.value = options
-    return
-  }
-
-  if (!shouldResolveDynamicOptionAvailability.value || isAdminPreview.value) {
-    resolvedSelectOptions.value = options
-    return
-  }
-
-  const requestId = ++optionAvailabilityRequestId.value
-  const validateOnlyField = field.id
-  const slug = form.value?.slug
-  const basePayload = { ...formPayloadForValidation.value }
-
-  const availability = await Promise.all(options.map(async (option) => {
-    const payload = {
-      ...basePayload,
-      [field.id]: option.value
-    }
-    try {
-      await formsApi.submissions.answer(slug, payload, {
-        headers: {
-          Precognition: true,
-          'Precognition-Validate-Only': validateOnlyField
-        }
-      })
-      return { ...option, disabled: false, disabled_message: undefined }
-    } catch (error) {
-      const fieldErrors = error?.data?.errors?.[field.id]
-      if (!Array.isArray(fieldErrors) || fieldErrors.length === 0) {
-        return { ...option, disabled: false, disabled_message: undefined }
-      }
-      return {
-        ...option,
-        disabled: true,
-        disabled_message: fieldErrors[0]
-      }
-    }
-  }))
-
-  if (requestId === optionAvailabilityRequestId.value) {
-    resolvedSelectOptions.value = availability
-  }
-}
-
-const debouncedRefreshOptionAvailability = debounce(() => {
-  refreshOptionAvailability()
-}, 300)
-
-watch(
-  [baseSelectOptions, shouldResolveDynamicOptionAvailability, formPayloadForValidation, () => form.value?.slug],
-  () => {
-    debouncedRefreshOptionAvailability()
-  },
-  { immediate: true }
-)
-
-onUnmounted(() => {
-  if (typeof debouncedRefreshOptionAvailability?.clear === 'function') {
-    debouncedRefreshOptionAvailability.clear()
-  }
-})
+})()
 
 const boundProps = computed(() => {
   const field = props.block
@@ -351,7 +243,7 @@ const boundProps = computed(() => {
   if (field.type === 'barcode') inputProperties.decoders = field.decoders
 
   if (['select', 'multi_select'].includes(field.type)) {
-    inputProperties.options = resolvedSelectOptions.value ?? []
+    inputProperties.options = selectOptions ?? []
     inputProperties.multiple = (field.type === 'multi_select')
     inputProperties.allowCreation = (field.allow_creation === true)
     inputProperties.searchable = (inputProperties.options.length > 4)
@@ -425,3 +317,5 @@ const editFieldOptions = () => {
   workingFormStore.openSettingsForField(props.block, true)
 }
 </script>
+
+

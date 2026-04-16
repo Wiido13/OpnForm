@@ -413,16 +413,12 @@ export default {
       return this.selectedCount >= this.maxSelection
     },
     disabledOptionsMap () {
-      if (!this.data) return {}
+      if (!this.multiple || !this.maxSelection || !this.data) return {}
       
       const map = {}
       for (const item of this.data) {
-        const isExplicitlyDisabled = item?.disabled === true
         const isSelected = this.isSelected(item)
-        const disabledBySelectionLimit = this.multiple && this.maxSelection
-          ? (!isSelected && this.maxSelectionReached)
-          : false
-        map[item[this.optionKey]] = isExplicitlyDisabled || disabledBySelectionLimit
+        map[item[this.optionKey]] = !isSelected && this.maxSelectionReached
       }
       return map
     },
