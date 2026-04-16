@@ -43,8 +43,8 @@
             />
           </template>
           <UTooltip
-            :text="disableOptionsTooltip"
-            :disabled="!disableOptions.includes(option[optionKey])"
+            :text="soldOutMap[option[optionKey]] ? soldOutMap[option[optionKey]].soldOutText : disableOptionsTooltip"
+            :disabled="!disableOptions.includes(option[optionKey]) && !soldOutMap[option[optionKey]]"
             class="w-full"
           >
             <slot
@@ -52,8 +52,11 @@
               :option="option"
               :selected="isSelected(option[optionKey])"
             >
-              <p class="flex-grow">
+              <p class="flex-grow" :class="{ 'line-through opacity-60': soldOutMap[option[optionKey]] && soldOutMap[option[optionKey]].strikethrough }">
                 {{ option[displayKey] }}
+                <span v-if="soldOutMap[option[optionKey]]" class="text-xs opacity-70 ml-1 italic">
+                  ({{ soldOutMap[option[optionKey]].soldOutText }})
+                </span>
               </p>
             </slot>
           </UTooltip>
@@ -119,7 +122,8 @@ export default {
     disableOptionsTooltip: { type: String, default: "Not allowed" },
     clearable: { type: Boolean, default: false },
     minSelection: { type: Number, default: null },
-    maxSelection: { type: Number, default: null }
+    maxSelection: { type: Number, default: null },
+    soldOutMap: { type: Object, default: () => ({}) }
   },
   setup(props, context) {
     const formInput = useFormInput(props, context, {

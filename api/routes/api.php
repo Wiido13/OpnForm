@@ -14,6 +14,7 @@ use App\Http\Controllers\Forms\FormSubmissionController;
 use App\Http\Controllers\Forms\Integration\FormIntegrationsController;
 use App\Http\Controllers\Forms\Integration\FormIntegrationsEventController;
 use App\Http\Controllers\Forms\Integration\FormZapierWebhookController;
+use App\Http\Controllers\Forms\FormOptionCountsController;
 use App\Http\Controllers\Forms\PublicFormController;
 use App\Http\Controllers\Settings\OAuthProviderController;
 use App\Http\Controllers\Settings\PasswordController;
@@ -368,6 +369,7 @@ Route::prefix('forms')->name('forms.')->group(function () {
 
     // Get form and submit
     Route::get('{form}', [PublicFormController::class, 'show'])->name('show');
+    Route::get('{form}/option-counts', FormOptionCountsController::class)->name('option-counts');
     Route::get('{form}/submissions/{submission_id}', [PublicFormController::class, 'fetchSubmission'])->name('fetchSubmission');
 
     // File uploads

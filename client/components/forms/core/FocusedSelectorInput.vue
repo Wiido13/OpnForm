@@ -20,10 +20,10 @@
       >
         <button
           type="button"
-          :class="buttonClasses(isSelected(option), disabled || option.disabled)"
+          :class="buttonClasses(isSelected(option), disabled || option.disabled || disableOptions.includes(option[optionKey]))"
           :aria-selected="isSelected(option) ? 'true' : 'false'"
           :tabindex="-1"
-          :disabled="disabled || option.disabled"
+          :disabled="disabled || option.disabled || disableOptions.includes(option[optionKey])"
           @click="selectOption(option, false)"
           @focus="focusedIdx = idx"
           @keydown.stop
@@ -35,8 +35,11 @@
           </span>
 
           <!-- Option text -->
-          <span :class="textClasses()">
+          <span :class="[textClasses(), { 'line-through opacity-60': soldOutMap[option[optionKey]] && soldOutMap[option[optionKey]].strikethrough }]">
             {{ getOptionName(option) }}
+            <span v-if="soldOutMap[option[optionKey]]" class="text-xs opacity-70 ml-1 italic">
+              ({{ soldOutMap[option[optionKey]].soldOutText }})
+            </span>
           </span>
 
           <!-- Checkmark for selected state -->
@@ -114,7 +117,9 @@ const props = defineProps({
   allowCreation: { type: Boolean, default: false },
   minSelection: { type: Number, default: null },
   maxSelection: { type: Number, default: null },
-  presentation: { type: String, default: 'classic' }
+  presentation: { type: String, default: 'classic' },
+  disableOptions: { type: Array, default: () => [] },
+  soldOutMap: { type: Object, default: () => ({}) }
 })
 
 const emit = defineEmits(['update:modelValue', 'focus', 'blur', 'input-filled'])
@@ -234,7 +239,7 @@ function isSelected(option) {
 }
 
 function selectOption(option, fromKeyboard = false) {
-  if (props.disabled || option.disabled) return
+  if (props.disabled || option.disabled || props.disableOptions.includes(getOptionValue(option))) return
   
   const optValue = getOptionValue(option)
   

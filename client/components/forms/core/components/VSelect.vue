@@ -301,7 +301,9 @@ export default {
     searchDebounceMs: { type: Number, default: 150 },
     minSearchLength: { type: Number, default: 1 },
     // Explicit popover width control. Accepts number (px) or CSS length string.
-    popoverWidth: { type: [String, Number], default: null }
+    popoverWidth: { type: [String, Number], default: null },
+    disableOptions: { type: Array, default: () => [] },
+    soldOutMap: { type: Object, default: () => ({}) }
   },
   emits: ['update:modelValue', 'update-options', 'focus', 'blur'],
   data () {
@@ -413,12 +415,16 @@ export default {
       return this.selectedCount >= this.maxSelection
     },
     disabledOptionsMap () {
-      if (!this.multiple || !this.maxSelection || !this.data) return {}
+      if (!this.data) return {}
       
       const map = {}
       for (const item of this.data) {
+        const key = item[this.optionKey]
         const isSelected = this.isSelected(item)
-        map[item[this.optionKey]] = !isSelected && this.maxSelectionReached
+        // Disable if: max selection reached (and not selected), or explicitly in disableOptions
+        const maxDisabled = !isSelected && this.maxSelectionReached
+        const slotDisabled = this.disableOptions.includes(key)
+        map[key] = maxDisabled || slotDisabled
       }
       return map
     },
